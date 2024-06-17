@@ -1,0 +1,48 @@
+import requests as req # сбор данных с веб-страницы
+from bs4 import BeautifulSoup # обработка данных с веб-страницы
+import re # регулярные выражения
+import time # Для залипания программы, иначе сайт циан отрубает за превышения количества запросов
+import pandas as pd
+
+url = 'https://www.cian.ru/snyat-1-komnatnuyu-kvartiru/' # ссылка на страницу
+r = req.get(url) # переменная, содержащая ссылку
+print(r.status_code) # статус выполнения запроса
+
+soup = BeautifulSoup(r.text, 'html.parser') # обработка документа r.text, чтобы получить объект BeautifulSoup
+links_list = list(set(re.findall(r'https://www.cian.ru/rent/flat/\d+/', str(soup)))) # Список ссылок, пропущен через set для удаления дублей
+print(links_list)
+
+df = pd.DataFrame(columns=['link', 'price', 'address', 'tel_number', 'desc_head']) # Датафрейм для сохранения результата
+itog = [] # Список для сохранения результата(оставил на всякий случай)
+for elem in links_list:
+    for_itog = {} # Словарь для сбора результата по каждому объявлению
+    el = req.get(elem)  # Поучение кода объявления по ссылке
+    adv = BeautifulSoup(el.text, 'html.parser') # обработка документа el.text, чтобы получить объект BeautifulSoup
+    adv_link = list(set((re.findall(r'https://www.cian.ru/rent/flat/\d+/', str(adv))))) # Ссылка на объявление
+    print(adv_link)
+    price = list(set(((re.findall(r'\d+ \d+ \w{2,5}\. \w \w{3,6}\.', str(adv)))))) # Цена квартиры
+    phones = re.findall(r'\{"countryCode":"\+\d{1,4}","number":"\d{10,15}"}', str(adv)) # Телефоны
+    phone = [] # Список для сохранения телефонов в божеском виде
+    for i in phones: # Обработка словаря с телефонами
+        i = eval(i) # Строку в словарь
+        i = i.get('countryCode') + i.get('number') # Соединение кода и номера
+        phone.append(i) # Запись в итоговый список телефонов
+    desc_head = adv.find('h1').get_text() # Заголовок объявления
+    adr = adv.find('address').get_text() # Адрес квартиры
+    for_split = 'На карте' # Место остановки для разделения исходной строки с адресом и выбора собственно адреса
+    adr = str(adr).split(for_split)[0]  # Выбираем часть строки (адрес) до нужного элемента
+    # Запись итога в словарь
+    for_itog.update({'Ссылка': adv_link})
+    for_itog.update({'Цена': price})
+    for_itog.update({'Телефон(ы)': phone})
+    for_itog.update({'Заголовок': desc_head})
+    for_itog.update({'Адрес': adr})
+    itog.append(for_itog) # Запись итога в список
+    df.loc[len(df.index)] = [for_itog.get('Ссылка')[0],  # Запись в конец датафрейма с результатом
+                             for_itog.get('Цена')[0],
+                             for_itog.get('Адрес'),
+                             for_itog.get('Телефон(ы)')[0],
+                             for_itog.get('Заголовок')]
+    time.sleep(5) # Залипание на 5 секунд, чтобы циан не отрубал по лимиту запросов
+
+df.to_excel(r'C:\Users\Azerty\Desktop\parser_py.xlsx') # Вывод датафрейма в эксель
