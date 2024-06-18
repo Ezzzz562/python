@@ -1,7 +1,7 @@
 import requests as req # сбор данных с веб-страницы
 from bs4 import BeautifulSoup # обработка данных с веб-страницы
 import re # регулярные выражения
-import time # для залипания программы, иначе сайт циан отрубает за превышения количества запросов
+import time # для залипания программы, иначе сайт циан отрубает за превышение количества запросов
 import pandas as pd
 
 url = 'https://www.cian.ru/snyat-1-komnatnuyu-kvartiru/' # ссылка на страницу
