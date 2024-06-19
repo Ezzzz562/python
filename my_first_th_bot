@@ -5,3 +5,53 @@ Use this token to access the HTTP API:
 Keep your token secure and store it safely, it can be used by anyone to control your bot.
 
 For a description of the Bot API, see this page: https://core.telegram.org/bots/api
+
+# https://timeweb.cloud/tutorials/python/kak-sozdat-telegram-bota-na-python
+
+import telebot
+
+bot_time_web = telebot.TeleBot('7349891948:AAEaRluM3eVRs-yB0QyffaqoGb-MYl0953o') # уникальный токен бота получен при его регистрации
+
+# Первые две строчки объявляют метод обработки входящих сообщений.
+# В нашем случае в качестве параметра передается команда /start.
+@bot_time_web.message_handler(commands=['start'])
+def startBot(message):
+    # Обращение к пользователю после команды /start
+    # объект Message необходим для определения имени (first_name) и фамилии (last_name) пользователя
+  first_mess = f"<b>{message.from_user.first_name} {message.from_user.last_name}</b>, привет!\nХочешь расскажу немного о нашей компании?"
+  # Далее следуют 3 строчки кода, отвечающие за добавление кнопки, которая в будущем будет перенаправлять
+    # пользователя на следующее сообщение. Тип данной кнопки — Inline. Это значит, что такая кнопка будет
+    # отображаться прямо под сообщением. Для ее создания необходимо использовать метод InlineKeyboardButton.
+    # Параметр text отвечает за имя кнопки, а callback_data — за возвращаемую строку при нажатии.
+    # Второй параметр понадобится для реализации функционала кнопки.
+  markup = telebot.types.InlineKeyboardMarkup()
+  button_yes = telebot.types.InlineKeyboardButton(text = 'Да', callback_data='yes')
+  markup.add(button_yes)
+    # метод send_message необходим для отправки сообщения пользователю. У него указаны 4 параметра:
+    # message.chat.id отвечает за синхронизацию сообщения с чатом бота;
+    # first_mess передает ранее указанное сообщение;
+    # parse_mode необходим для указания режима разметки сообщений;
+    # reply_markup отвечает за добавление созданной кнопки.
+  bot_time_web.send_message(message.chat.id, first_mess, parse_mode='html', reply_markup=markup)
+
+"""В начале объявляется метод для обработки запросов обратного вызова. Выполняется проверка на соответствие 
+строки, указанной после == и возвращенной после нажатия кнопки. Так как ранее мы указали значение параметра 
+callback_data = 'yes', то проверка пройдет успешно. 
+После проверки реализован функционал кнопки. Переменная second_mess хранит текст ответного сообщения. 
+А далее описана реализация кнопки, которая хранит ссылку на сайт компании Timeweb Cloud.
+Последним шагом будет указать боту на то, что обработка команды закончена. Для этого указываем команду 
+answer_callback_query."""
+@bot_time_web.callback_query_handler(func=lambda call:True)
+def response(function_call):
+  if function_call.message:
+     if function_call.data == "yes":
+        second_mess = "Мы облачная платформа для разработчиков и бизнеса. Более детально можешь ознакомиться с нами на нашем сайте!"
+        markup = telebot.types.InlineKeyboardMarkup()
+        markup.add(telebot.types.InlineKeyboardButton("Перейти на сайт", url="https://timeweb.cloud/"))
+        bot_time_web.send_message(function_call.message.chat.id, second_mess, reply_markup=markup)
+        bot_time_web.answer_callback_query(function_call.id)
+
+# отвечает за непрерывное продолжение работы бота
+bot_time_web.infinity_polling()
+
+
