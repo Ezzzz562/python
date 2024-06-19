@@ -45,4 +45,5 @@ for elem in links_list:
                              for_itog.get('Заголовок')]
     time.sleep(5) # Залипание на 5 секунд, чтобы циан не отрубал по лимиту запросов
 
+df = df.sort_values(by=['price'], ascending=False) # Цена по возрастанию
 df.to_excel(r'C:\Users\Azerty\Desktop\parser_py.xlsx') # Вывод датафрейма в эксель
