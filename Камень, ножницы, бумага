@@ -1,0 +1,53 @@
+import  random
+
+# var_list = ['камень', 'ножницы', 'бумага']
+#
+# while True:
+#     comp_var = random.choice(var_list)
+#     print(comp_var)
+#     user_var = input('Напишите: камень, ножницы или бумага ')
+#     if user_var == comp_var:
+#         print(f'Компьютер тоже выбрал {user_var}, попробуйте еще раз')
+#         continue
+#     elif comp_var == 'камень' and user_var == 'ножницы':
+#         print(f'Компьютер выбрал {comp_var}, вы проиграли')
+#         break
+#     elif comp_var == 'камень' and user_var == 'бумага':
+#         print(f'Компьютер выбрал {comp_var}, вы победили!')
+#         break
+#     elif comp_var == 'ножницы' and user_var == 'бумага':
+#         print(f'Компьютер выбрал {comp_var}, вы проиграли')
+#         break
+#     elif comp_var == 'ножницы' and user_var == 'камень':
+#         print(f'Компьютер выбрал {comp_var}, вы победили!')
+#         break
+#     elif comp_var == 'бумага' and user_var == 'камень':
+#         print(f'Компьютер выбрал {comp_var}, вы проиграли')
+#         break
+#     elif comp_var == 'бумага' and user_var == 'ножницы':
+#         print(f'Компьютер выбрал {comp_var}, вы победили!')
+#         break
+#     else:
+#         print('Вы ввели что-то не то, попробуйте еще раз')
+#         continue
+
+var_list = {
+    'камень':'ножницы',
+    'ножницы':'бумага',
+    'бумага':'камень'
+}
+
+while True:
+    b = input("Игрок 1: ")
+    c = input("Игрок 2: ")
+
+    if b == c:
+        print("ничья")
+        continue
+    for i, j in var_list.items():
+        if b == i and c == j:
+            print("Победил Игрок 1")
+            break
+        elif c == i and b == j:
+            print("Победил Игрок 2")
+            break
