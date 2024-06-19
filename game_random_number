@@ -1,0 +1,20 @@
+import random
+
+randon_num = random.randint(1,10)
+print(randon_num)
+
+seq = 1
+while seq < 4:
+    if seq == 1:
+        user_num = int(input('Введите число от 1 до 10. У вас 3 попытки: '))
+    if user_num == randon_num:
+        print('Угадали!')
+        break
+    else:
+        if seq == 1:
+            user_num = int(input('Не угадали, осталось 2 попытки: '))
+        elif seq == 2:
+            user_num = int(input('Не угадали, осталась 1 попытка: '))
+        else:
+            print('Не повезло. Вы проиграли')
+    seq += 1
