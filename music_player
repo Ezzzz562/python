@@ -1,0 +1,50 @@
+import sys
+import os
+from playsound import playsound
+import asyncio
+
+from PyQt6.QtCore import QSize, Qt
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QGridLayout, QVBoxLayout, QWidget
+
+song = r'C:\Users\Azerty\Desktop\DOROFEEVA - Pust.mp3'
+# playsound(song)
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("mysic_player")
+        self.setMinimumSize(QSize(400, 300))
+
+        l = QVBoxLayout()
+        button_start = QPushButton("Start")
+        # button_start.setCheckable(True) # устанавливает, является ли кнопка переключателем
+        button_start.clicked.connect(self.the_button_start_was_clicked) # определяет, когда кнопка нажата
+        l.addWidget(button_start) # выводит кнопку на экран
+
+        button_stop = QPushButton("Stop")
+        # button_stop.setCheckable(True)  # устанавливает, является ли кнопка переключателем
+        button_stop.clicked.connect(self.the_button_stop_was_clicked) # определяет, когда кнопка нажата
+        l.addWidget(button_stop) # выводит кнопку на экран
+
+        # Устанавливаем центральный виджет Window.
+        # self.setCentralWidget(button_start)
+        # self.setCentralWidget(button_stop)
+        w = QWidget()
+        w.setLayout(l)
+        self.setCentralWidget(w)
+
+    def the_button_start_was_clicked(self):
+        # if os.path.exists(r'C:\Users\Azerty\Desktop\DOROFEEVA - Pust.mp3'):
+        playsound(song)
+    def the_button_stop_was_clicked(self):
+        # exit()
+        self.close()
+
+
+app = QApplication(sys.argv)
+
+window = MainWindow()
+window.show()
+
+app.exec()
