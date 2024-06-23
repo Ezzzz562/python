@@ -1,50 +1,139 @@
 import sys
-import os
-from playsound import playsound
-import asyncio
+import pygame
+from PyQt6 import uic  # Импортируем uic
+from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog
+from PyQt6.QtCore import QTimer, QTime
 
-from PyQt6.QtCore import QSize, Qt
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QGridLayout, QVBoxLayout, QWidget
 
-song = r'C:\Users\Azerty\Desktop\DOROFEEVA - Pust.mp3'
-# playsound(song)
-
-class MainWindow(QMainWindow):
+class MyWidget(QMainWindow):
     def __init__(self):
         super().__init__()
+        uic.loadUi(r'C:\Users\Azerty\Desktop\design\example\player_design.ui', self)  # Загружаем дизайн
 
-        self.setWindowTitle("mysic_player")
-        self.setMinimumSize(QSize(400, 300))
+        pygame.mixer.init() # подключает музыку к программе
+        self.playing = False # отвечает за проигрывание музыки, False - музыка не играет, True - играет
+        self.last_url = None
 
-        l = QVBoxLayout()
-        button_start = QPushButton("Start")
-        # button_start.setCheckable(True) # устанавливает, является ли кнопка переключателем
-        button_start.clicked.connect(self.the_button_start_was_clicked) # определяет, когда кнопка нажата
-        l.addWidget(button_start) # выводит кнопку на экран
+        # подключение всех событий методом clicked.connect() к определённым функциям
+        self.add_music.clicked.connect(self.add_button)
+        self.delete_music.clicked.connect(self.delete_button)
+        self.play.clicked.connect(self.play_button)
+        self.pause.clicked.connect(self.pause_button)
+        self.stop.clicked.connect(self.stop_button)
+        self.backward.clicked.connect(self.backward_button)
+        self.forward.clicked.connect(self.forward_button)
+        self.volume_slider.valueChanged.connect(self.set_volume)
+        # self.progress_bar.valueChanged.connect(self.progress_bar)
 
-        button_stop = QPushButton("Stop")
-        # button_stop.setCheckable(True)  # устанавливает, является ли кнопка переключателем
-        button_stop.clicked.connect(self.the_button_stop_was_clicked) # определяет, когда кнопка нажата
-        l.addWidget(button_stop) # выводит кнопку на экран
+        self.lcdtimer = QTimer()
+        self.lcdtimer.timeout.connect(self.lcd_timer)
+        self.time_counter = 0
 
-        # Устанавливаем центральный виджет Window.
-        # self.setCentralWidget(button_start)
-        # self.setCentralWidget(button_stop)
-        w = QWidget()
-        w.setLayout(l)
-        self.setCentralWidget(w)
+    def lcd_timer(self):
+        time = QTime(self.time_counter // 3600, self.time_counter // 60, self.time_counter % 60)
+        text = time.toString('hh:mm:ss')
+        self.timer.display(text) # методом display() выводится время
+        self.time_counter += 1
 
-    def the_button_start_was_clicked(self):
-        # if os.path.exists(r'C:\Users\Azerty\Desktop\DOROFEEVA - Pust.mp3'):
-        playsound(song)
-    def the_button_stop_was_clicked(self):
-        # exit()
-        self.close()
+        # условие, проверяющее длительность музыки на совпадение с таймером
+        if self.time_counter == round(self.sound.get_length()):
+            self.time_counter = 0
+            self.playing = False
+            self.last_url = None
+            self.lcdtimer.stop()
+
+    def add_button(self):
+        fname = QFileDialog.getOpenFileName(
+            self, 'Выбрать музыку', '',
+            'Аудио (*.mp3)')[0]
+
+        self.list_widget.addItem(fname)
+
+    def stop_button(self):
+        if self.playing:
+            pygame.mixer.music.stop()
+            self.playing = False # Статус песни меняем на исходный
+            self.last_url = None # Очищаем ссылку для нового запуска
+            self.lcdtimer.stop() # Останавливаем таймер
+            self.time_counter = 0 # Обнуляем таймер
+            time = QTime(self.time_counter // 3600, self.time_counter // 60, self.time_counter % 60)
+            text = time.toString('hh:mm:ss')
+            self.timer.display(text)# Выводим нули на дисплей
+
+    def delete_button(self):
+        item = self.list_widget.selectedItems()[0]
+        if item:
+            self.list_widget.takeItem(self.list_widget.row(item))
+
+    def play_button(self):
+        music = self.list_widget.selectedItems() # При нажатии берётся выбранный элемент методом selectedItems()
+        if music:
+            new_url = music[0].text()
+            if new_url != self.last_url: # Сравнивается не изменил ли музыку пользователь. Если изменил, то мы проигрываем заново методом load(), обновляем счётчик.
+                pygame.mixer.music.load(new_url)
+                self.last_url = new_url
+                pygame.mixer.music.play()
+
+                self.sound = pygame.mixer.Sound(new_url)
+
+                self.time_counter = 0
+                self.plain_text_edit.setPlainText(new_url)
+
+            else: # Если не изменил, то музыка уходит с паузы, если была остановлена, методом unpause()
+                pygame.mixer.music.unpause()
+
+            self.lcdtimer.start(1000) # Скорость счета таймера в милисекундах
+            self.playing = True
+
+    def pause_button(self):
+        if self.playing:
+            self.lcdtimer.stop()
+            pygame.mixer.music.pause()
+
+    def backward_button(self):
+        if self.playing:
+            if self.time_counter > 10:
+                pygame.mixer.music.pause()
+                pygame.mixer.music.set_pos(self.time_counter - 10)
+                self.time_counter -= 10
+                pygame.mixer.music.unpause()
+            else:
+                pygame.mixer.music.rewind()
+                self.time_counter = 0
+
+    def forward_button(self):
+        if self.playing:
+            if self.time_counter + 10 < self.sound.get_length():
+                pygame.mixer.music.pause()
+                pygame.mixer.music.set_pos(self.time_counter + 10)
+                self.time_counter += 10
+                pygame.mixer.music.unpause()
+            else:
+                pass
+
+    def set_volume(self): # изменения звука
+        new_value = round(self.volume_slider.value() / 100, 3)
+        pygame.mixer.music.set_volume(new_value)
+
+    # def progress_line(self):
+    #     # new_pos = round(self.progress_slider.valueChanged / 100, 3)
+    #     # pygame.mixer.music.set_pos(new_pos)
+    #     time = QTime(self.time_counter // 3600, self.time_counter // 60, self.time_counter % 60)
+    #     # text = time.toString('hh:mm:ss')
+    #     # self.timer.display(text)  # методом display() выводится время
+    #     self.time_counter += 1
+    #     pygame.mixer.music.set_pos(time)
+
+    # def progress_line(self):  #get pos
+    #     global progress_slider
+    #     if pygame.mixer.music.get_busy():
+    #         progress_slider.set(float(pygame.mixer.music.get_pos()))
 
 
-app = QApplication(sys.argv)
 
-window = MainWindow()
-window.show()
-
-app.exec()
+if __name__ == '__main__':
+    pygame.init()
+    app = QApplication(sys.argv)
+    ex = MyWidget()
+    ex.show()
+    sys.exit(app.exec())
