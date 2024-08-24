@@ -1,8 +1,9 @@
 import sys
 import pygame
-from PyQt6 import uic  # Импортируем uic
-from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog
-from PyQt6.QtCore import QTimer, QTime
+from PyQt6 import uic, QtMultimedia  # Импортируем uic
+from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog, QProgressBar, QSlider, QHBoxLayout, QLabel
+from PyQt6.QtCore import QTimer, QTime, Qt
+from time import time
 
 
 class MyWidget(QMainWindow):
@@ -23,11 +24,19 @@ class MyWidget(QMainWindow):
         self.backward.clicked.connect(self.backward_button)
         self.forward.clicked.connect(self.forward_button)
         self.volume_slider.valueChanged.connect(self.set_volume)
-        # self.progress_bar.valueChanged.connect(self.progress_bar)
 
         self.lcdtimer = QTimer()
         self.lcdtimer.timeout.connect(self.lcd_timer)
         self.time_counter = 0
+
+        # self.lcdtimer.timeout.connect(self.update_slider_position)
+
+        # self.time_slider.valueChanged.connect(self.time_slider_udate)
+        # self.label_time = QLabel('', self)
+        # self.player = QtMultimedia.QMediaPlayer()
+        # self.time_slider.sliderReleased.connect(self.slider_released)
+        self.time_slider.valueChanged.connect(self.slider_released)
+
 
     def lcd_timer(self):
         time = QTime(self.time_counter // 3600, self.time_counter // 60, self.time_counter % 60)
@@ -36,7 +45,7 @@ class MyWidget(QMainWindow):
         self.time_counter += 1
 
         # условие, проверяющее длительность музыки на совпадение с таймером
-        if self.time_counter == round(self.sound.get_length()):
+        if self.time_counter == round(self.sound.get_length()): # если песня закончилась
             self.time_counter = 0
             self.playing = False
             self.last_url = None
@@ -85,6 +94,13 @@ class MyWidget(QMainWindow):
             self.lcdtimer.start(1000) # Скорость счета таймера в милисекундах
             self.playing = True
 
+            # print(self.sound.get_length())
+            # print(round(self.sound.get_length()))
+
+            # self.time_slider.setMinimum(0)
+            # self.time_slider.setMaximum(self.sound.get_length())
+            # self.time_slider.setValue(self.time_slider.value() + 1)
+
     def pause_button(self):
         if self.playing:
             self.lcdtimer.stop()
@@ -115,21 +131,29 @@ class MyWidget(QMainWindow):
         new_value = round(self.volume_slider.value() / 100, 3)
         pygame.mixer.music.set_volume(new_value)
 
-    # def progress_line(self):
-    #     # new_pos = round(self.progress_slider.valueChanged / 100, 3)
-    #     # pygame.mixer.music.set_pos(new_pos)
-    #     time = QTime(self.time_counter // 3600, self.time_counter // 60, self.time_counter % 60)
-    #     # text = time.toString('hh:mm:ss')
-    #     # self.timer.display(text)  # методом display() выводится время
-    #     self.time_counter += 1
-    #     pygame.mixer.music.set_pos(time)
+    def slider_released(self):
+        self.time_slider.setMinimum(0)
+        self.time_slider.setMaximum(round(self.sound.get_length())) # Без округления длина песни получается дробная, возникает ошибка
+        # time = QTime(self.time_counter // 3600, self.time_counter // 60, self.time_counter % 60)
+        # min_time = 0
+        # max_time = round(self.sound.get_length())
+        # cur_pos = pygame.mixer.music.get_pos
+        new_value = round(self.time_slider.value() / 100, 3) + 10 #.time_counter
+        pygame.mixer.music.set_pos(new_value)
+        # Приравнять длину ползунка к длительности песни и шаг перемещения к секунде pygame.mixer.music.set_pos
+        # print(min_time)
+        # print(max_time)
+        # a = self.time_slider.tickInterval()
+        a = self.value()
+        print(a)
 
-    # def progress_line(self):  #get pos
-    #     global progress_slider
-    #     if pygame.mixer.music.get_busy():
-    #         progress_slider.set(float(pygame.mixer.music.get_pos()))
 
 
+
+        # cur_pos = pygame.mixer.music.get_pos
+        # print(cur_pos)
+        # print(max_time)
+        # print(current_time)
 
 if __name__ == '__main__':
     pygame.init()
