@@ -140,7 +140,7 @@ class MyWidget(QMainWindow):
         # cur_pos = pygame.mixer.music.get_pos
         # new_value = round(self.time_slider.value() / 100, 3) + 10 #.time_counter - работает
         new_value = self.time_slider.value() # момент песни, значение положения ползунка = секунде в песне
-        pygame.mixer.music.set_pos(new_value)
+        pygame.mixer.music.set_pos(new_value) # выбор секунды песни согласно положению ползунка
         # Приравнять длину ползунка к длительности песни и шаг перемещения к секунде pygame.mixer.music.set_pos
         # print(min_time)
         # print(max_time)
