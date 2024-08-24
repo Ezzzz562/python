@@ -134,6 +134,7 @@ class MyWidget(QMainWindow):
     def slider_released(self):
         self.time_slider.setMinimum(0)
         self.time_slider.setMaximum(round(self.sound.get_length())) # Без округления длина песни получается дробная, возникает ошибка
+        # self.time_slider.setValue(self.time_counter) # Сам не двигается
         # time = QTime(self.time_counter // 3600, self.time_counter // 60, self.time_counter % 60)
         # min_time = 0
         # max_time = round(self.sound.get_length())
