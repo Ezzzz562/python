@@ -1,0 +1,18 @@
+pas = '0519'
+seq = 0
+find_pas = 0
+
+while int(pas) != find_pas:
+    find_pas += 1
+    seq += 1
+
+if len(str(find_pas)) < len(pas):
+    while len(str(find_pas)) < len(pas):
+        find_pas = str(find_pas)
+        find_pas_list = list(find_pas)
+        find_pas_list.insert(0, '0')
+        find_pas = ''.join(find_pas_list)
+
+print(pas)
+print(find_pas)
+print(seq)
